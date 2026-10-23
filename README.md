@@ -1,6 +1,8 @@
 # ArkWeb ChatGPT
 
-基于 Bowen ArkWeb 框架的 HarmonyOS 应用，通过 ArkWeb 访问 ChatGPT，提供登录弹窗、文件下载和应用内代理支持。
+本项目基于 **[Bowen_ArkWeb_framework](https://github.com/zhubowen-bot/Bowen_ArkWeb_framework)** 开发，保留原项目的 Apache-2.0 许可证与来源说明，感谢原作者。
+
+这是一个通过 ArkWeb 访问 ChatGPT 的 HarmonyOS 应用，提供登录弹窗、文件下载和应用内代理支持。
 
 当前版本：**8.4.3**。这是独立开发的第三方客户端。
 
@@ -55,7 +57,7 @@ hdc -t <device> shell aa test -b com.bowen.chatgpt -m entry_test -s unittest Ope
 
 - [ChatGPT 适配说明](README_CHATGPT.md)
 - [原 ArkWeb 框架说明](docs/arkweb-framework.md)
-- [Bowen ArkWeb 原项目](https://github.com/zhubowen-bot/Bowen_ArkWeb_framework)
+- [Bowen_ArkWeb_framework 原项目](https://github.com/zhubowen-bot/Bowen_ArkWeb_framework)
 - [Mihomo](https://github.com/MetaCubeX/mihomo)
 
 原框架保留 Apache-2.0 许可证。第三方库和资源遵循各自许可证；GPT 图标相关权利归 OpenAI 所有。
