@@ -1,0 +1,10 @@
+{
+  "app": {
+    "bundleName": "com.bowen.chatgpt",
+    "vendor": "example",
+    "versionCode": 8000043,
+    "versionName": "8.4.3",
+    "icon": "$media:app_layered_image",
+    "label": "$string:app_name"
+  }
+}

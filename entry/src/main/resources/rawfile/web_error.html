@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<!-- color-scheme 必须排在所有配色之前：内核据此决定画布默认底色与控件配色。
+     缺它时深色模式首帧画布是白的，页面一亮一暗就是用户看到的"闪一下"。 -->
+<meta name="color-scheme" content="light dark">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#FFFFFF">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#212121">
+<title>页面加载失败</title>
+<style>:root{color-scheme:light dark;--bg:#FFFFFF;--card:#FFFFFF;--text:#0D0D0D;--text-2:#8E8EA0;--accent:#10A37F;--accent-strong:#0E8C6D;--badge-bg:rgba(16,163,127,.10);--chip-bg:#F4F4F5;--border:#E5E5E8;--btn-2-border:#DADAE0;--btn-2-hover:#F4F4F5;--shadow:0 10px 34px rgba(0,0,0,.06)}
+@media (prefers-color-scheme:dark){:root{--bg:#212121;--card:#2F2F2F;--text:#ECECEC;--badge-bg:rgba(16,163,127,.16);--chip-bg:rgba(255,255,255,.08);--border:rgba(255,255,255,.10);--btn-2-border:rgba(255,255,255,.18);--btn-2-hover:rgba(255,255,255,.08);--shadow:0 10px 34px rgba(0,0,0,.35)}}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+html{background:var(--bg)}
+body{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--text);font-family:-apple-system,'HarmonyOS Sans SC','Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.card{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;text-align:center;background:var(--card);border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow);padding:44px 28px 32px}
+.badge{display:inline-flex;align-items:center;justify-content:center;margin-bottom:26px;padding:18px 22px;border-radius:28px;background:var(--badge-bg);color:var(--accent)}
+.badge svg{display:block;width:104px;height:auto}
+.title{font-size:21px;font-weight:600;letter-spacing:.2px;color:var(--text)}
+.subtitle{max-width:30em;margin-top:10px;font-size:14px;line-height:1.65;color:var(--text-2)}
+.chip{display:inline-flex;align-items:center;max-width:100%;margin-top:18px;padding:6px 14px;border-radius:999px;background:var(--chip-bg);color:var(--text-2);font-size:13px;line-height:1.4;word-break:break-all}
+.target{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:6px;max-width:100%;margin-top:16px;font-size:13px;color:var(--text-2)}
+.target-host{color:var(--text);font-weight:500;word-break:break-all}
+.actions{display:flex;flex-direction:column;gap:12px;width:100%;margin-top:32px}
+.btn{width:100%;min-height:46px;appearance:none;-webkit-appearance:none;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;transition:background-color .15s ease,opacity .15s ease}
+.btn-primary{background:var(--accent);color:#FFFFFF}
+.btn-primary:hover{background:var(--accent-strong)}
+.btn-primary:active{background:#0C7A60}
+.btn-primary:disabled{opacity:.4;cursor:default;pointer-events:none}
+.btn-secondary{color:var(--text);background:transparent;border:1px solid var(--btn-2-border)}
+.btn-secondary:hover,.btn-secondary:active{background:var(--btn-2-hover)}</style>
+</head>
+<body>
+<main class="card">
+<div class="badge" aria-hidden="true">
+<svg viewBox="0 0 120 72" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="网络连接中断"><path d="M4 36h13"/><rect x="17" y="25" width="17" height="22" rx="6"/><path d="M34 31h12"/><path d="M34 41h12"/><path d="M53 36h5"/><path d="M64 36h5"/><path d="M74 31h12"/><path d="M74 41h12"/><rect x="86" y="25" width="17" height="22" rx="6"/><path d="M103 36h13"/></svg>
+</div>
+<h1 class="title">页面加载失败</h1>
+<p class="subtitle" id="subtitle">服务暂时无法访问</p>
+<div class="chip" id="err-code" hidden></div>
+<div class="target" id="target-row" hidden><span>目标站点</span><span class="target-host" id="target-host"></span></div>
+<div class="actions">
+<button class="btn btn-primary" id="btn-retry" type="button" disabled>重试</button>
+<button class="btn btn-secondary" id="btn-home" type="button" hidden>返回首页</button>
+</div>
+</main>
+<script>
+/* 骨架已在 HTML 中静态呈现：脚本不执行（宿主禁 JS / 老内核报错）也能看到完整错误页且配色正确。
+   脚本只做增补，全部 try/catch 包裹，单点失败不影响其余部分。 */
+(function(){
+'use strict';
+var homeUrl='',target='';
+function $(id){try{return document.getElementById(id)}catch(e){return null}}
+/* 只接受 http/https：query 可被任意改写，放行 javascript:/file: 会造成页面内脚本执行或跳到本地文件 */
+function safeHttpUrl(raw){
+  if(!raw){return ''}
+  var cand=raw;
+  try{if(!/^https?:\/\//i.test(cand)){cand=decodeURIComponent(cand)}}catch(e){cand=raw}
+  try{var u=new URL(cand);if(u.protocol==='http:'||u.protocol==='https:'){return u.href}}catch(e2){}
+  return '';
+}
+var params=null;
+try{params=new URLSearchParams(window.location.search)}catch(e){params=null}
+/* 1. 错误码 chip */
+try{
+  var code=params?String(params.get('code')||'').trim():'';
+  var chip=$('err-code');
+  if(chip&&code){chip.textContent='错误码 '+(code.length>80?code.slice(0,80)+'…':code);chip.hidden=false}
+}catch(e){}
+/* 2. 目标站点：只取 host 展示 */
+try{
+  var shown=safeHttpUrl(params?String(params.get('target')||''):'');
+  if(shown){
+    var row=$('target-row'),hostEl=$('target-host');
+    try{var host=new URL(shown).host;if(hostEl&&host){hostEl.textContent=host}}catch(e3){}
+    if(row&&hostEl&&hostEl.textContent){row.hidden=false}
+  }
+}catch(e){}
+/* 3. 副标题按联网状态区分 */
+try{
+  var sub=$('subtitle');
+  if(sub&&typeof navigator!=='undefined'&&navigator.onLine===false){sub.textContent='网络未连接，请检查网络后重试'}
+}catch(e){}
+/* 4. 重试目标（严格校验）；5. 首页目标来自宿主传入的 home 参数，框架不硬编码任何域名 */
+target=safeHttpUrl(params?String(params.get('target')||''):'');
+homeUrl=safeHttpUrl(params?String(params.get('home')||''):'');
+/* 6. 按钮绑定：target/home 不合法时保持禁用，不留"点了没反应"的死按钮 */
+function bind(id,ok,handler){
+  var el=$(id);
+  if(!el){return}
+  if(!ok){el.disabled=true;return}
+  el.disabled=false;el.hidden=false;el.addEventListener('click',handler);
+}
+/* 在 resource:// 页面跳 https：本页由宿主 loadUrl 作为主框架打开，location.replace 与普通页面导航
+   走同一条链路，可以正常跳转；replace 不留历史，后退不会被弹回错误页。
+   若将来宿主改为 pushUrl/前进后退式导航，这里需要改成通过宿主桥接发起导航。 */
+bind('btn-retry',!!target,function(){try{window.location.replace(target)}catch(e){}});
+bind('btn-home',!!homeUrl,function(){try{window.location.replace(homeUrl)}catch(e){}});
+/* 7. theme-color 已由 meta media 查询静态决定，深浅色切换由内核直接生效，
+   不再用 JS 轮询覆盖（原实现会多一次样式重算与一次无用绘制）。 */
+})();
+</script>
+</body>
+</html>

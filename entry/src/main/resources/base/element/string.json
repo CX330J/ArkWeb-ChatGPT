@@ -1,0 +1,32 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "OHchatGPT"
+    },
+    {
+      "name": "internet_permission_reason",
+      "value": "需要访问网络加载网页内容"
+    },
+    {
+      "name": "print_permission_reason",
+      "value": "需要打印网页内容"
+    },
+    {
+      "name": "microphone_permission_reason",
+      "value": "访问麦克风用于第三方网站语音输入和音视频通话，您可以选择关闭"
+    },
+    {
+      "name": "camera_permission_reason",
+      "value": "访问相机用于第三方网站音视频通话，您可以选择关闭"
+    }
+  ]
+}
